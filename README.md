@@ -19,25 +19,26 @@ The following documentation is available:
 
 <!-- vim-markdown-toc GFM -->
 
-* [New major version](#new-major-version)
-* [Installation](#installation)
+- [Datadog Go](#datadog-go)
+  - [New major version](#new-major-version)
+  - [Installation](#installation)
     - [Supported environment variables](#supported-environment-variables)
     - [Unix Domain Sockets Client](#unix-domain-sockets-client)
-* [Usage](#usage)
+  - [Usage](#usage)
     - [Metrics](#metrics)
     - [Events](#events)
     - [Service Checks](#service-checks)
-* [Client side aggregation](#client-side-aggregation)
+  - [Client side aggregation](#client-side-aggregation)
     - ["Basic" aggregation](#basic-aggregation)
     - ["Extended" aggregation](#extended-aggregation)
-* [Performance / Metric drops](#performance--metric-drops)
+  - [Performance / Metric drops](#performance--metric-drops)
     - [Monitoring this client](#monitoring-this-client)
     - [Tweaking kernel options](#tweaking-kernel-options)
-        + [Unix Domain Sockets](#unix-domain-sockets)
+      - [Unix Domain Sockets](#unix-domain-sockets)
     - [Maximum packets size in high-throughput scenarios](#maximum-packets-size-in-high-throughput-scenarios)
-* [Development](#development)
-* [License](#license)
-* [Credits](#credits)
+  - [Development](#development)
+  - [License](#license)
+  - [Credits](#credits)
 
 <!-- vim-markdown-toc -->
 
