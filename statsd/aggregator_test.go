@@ -1,6 +1,7 @@
 package statsd
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"sync"
@@ -42,6 +43,28 @@ func TestAggregatorSample(t *testing.T) {
 		a.timing("timingTest", 21, tags, 1)
 		assert.Len(t, a.timings.values, 1)
 		assert.Contains(t, a.timings.values, "timingTest:tag1,tag2")
+	}
+}
+
+func TestAggregatorArrivalSample(t *testing.T) {
+	a := newAggregator(nil)
+
+	tags := []string{"tag1", "tag2"}
+
+	// First arrival, no counts
+	a.arrival("arrivalTest", tags)
+	assert.Len(t, a.arrivalTimes, 1)
+	assert.Len(t, a.counts, 0)
+
+	for i := 0; i < 2; i++ {
+		fmt.Println(i)
+		a.arrival("arrivalTest", tags)
+		assert.Len(t, a.arrivalTimes, 1)
+		assert.Contains(t, a.arrivalTimes, "arrivalTest:tag1,tag2")
+		assert.Len(t, a.counts, 3)
+		assert.Contains(t, a.counts, "arrivalTest.count:tag1,tag2")
+		assert.Contains(t, a.counts, "arrivalTest.sum_t:tag1,tag2")
+		assert.Contains(t, a.counts, "arrivalTest.sum_t_squared:tag1,tag2")
 	}
 }
 

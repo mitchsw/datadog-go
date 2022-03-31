@@ -1,17 +1,24 @@
 package statsd
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 )
 
+type arrivalTime struct {
+	t     time.Time
+	mutex sync.Mutex
+}
+
 type (
 	countsMap         map[string]*countMetric
 	gaugesMap         map[string]*gaugeMetric
 	setsMap           map[string]*setMetric
 	bufferedMetricMap map[string]*bufferedMetric
+	arrivalTimesMap   map[string]*arrivalTime
 )
 
 type aggregator struct {
@@ -26,6 +33,7 @@ type aggregator struct {
 	gauges        gaugesMap
 	counts        countsMap
 	sets          setsMap
+	arrivalTimes  arrivalTimesMap
 	histograms    bufferedMetricContexts
 	distributions bufferedMetricContexts
 	timings       bufferedMetricContexts
@@ -49,6 +57,7 @@ func newAggregator(c *Client) *aggregator {
 		counts:          countsMap{},
 		gauges:          gaugesMap{},
 		sets:            setsMap{},
+		arrivalTimes:    arrivalTimesMap{},
 		histograms:      newBufferedContexts(newHistogramMetric),
 		distributions:   newBufferedContexts(newDistributionMetric),
 		timings:         newBufferedContexts(newTimingMetric),
@@ -220,6 +229,41 @@ func (a *aggregator) count(name string, value int64, tags []string) error {
 
 	a.counts[context] = newCountMetric(name, value, tags)
 	a.countsM.Unlock()
+	return nil
+}
+
+func (a *aggregator) arrival(name string, tags []string) error {
+	context := getContext(name, tags)
+
+	// Find last arrival time
+	a.countsM.RLock()
+	arr, found := a.arrivalTimes[context]
+	if !found {
+		a.countsM.RUnlock()
+		a.countsM.Lock()
+		a.arrivalTimes[context] = &arrivalTime{
+			t: time.Now(),
+		}
+		a.countsM.Unlock()
+		return nil
+	}
+
+	// Critical region: calculate T and update for next arrival
+	arr.mutex.Lock()
+	now := time.Now()
+	lastArrival := arr.t
+	arr.t = now
+	arr.mutex.Unlock()
+
+	T := now.Sub(lastArrival).Microseconds()
+	a.countsM.RUnlock()
+	fmt.Printf("DEBUG T is %v\n", T)
+
+	// Write three metrics
+	// Note: lots of wasteful context lookups that could be optimized.
+	a.count(name+".count", 1, tags)
+	a.count(name+".sum_t", T, tags)
+	a.count(name+".sum_t_squared", T*T, tags)
 	return nil
 }
 

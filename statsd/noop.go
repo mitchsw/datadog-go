@@ -16,6 +16,11 @@ func (n *NoOpClient) Count(name string, value int64, tags []string, rate float64
 	return nil
 }
 
+// Arrival does nothing and returns nil
+func (n *NoOpClient) Arrival(name string, tags []string) error {
+	return nil
+}
+
 // Histogram does nothing and returns nil
 func (n *NoOpClient) Histogram(name string, value float64, tags []string, rate float64) error {
 	return nil

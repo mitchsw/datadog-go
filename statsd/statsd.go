@@ -162,6 +162,9 @@ type ClientInterface interface {
 	// Count tracks how many times something happened per second.
 	Count(name string, value int64, tags []string, rate float64) error
 
+	// Arrival is an experimental count metric that exports dispersion info.
+	Arrival(name string, tags []string) error
+
 	// Histogram tracks the statistical distribution of a set of values on each host.
 	Histogram(name string, value float64, tags []string, rate float64) error
 
@@ -562,6 +565,17 @@ func (c *Client) Count(name string, value int64, tags []string, rate float64) er
 		return c.agg.count(name, value, tags)
 	}
 	return c.send(metric{metricType: count, name: name, ivalue: value, tags: tags, rate: rate, globalTags: c.tags, namespace: c.namespace})
+}
+
+// Arrival is WIP
+func (c *Client) Arrival(name string, tags []string) error {
+	if c == nil {
+		return ErrNoClient
+	}
+	if c.agg == nil {
+		return errors.New("unimplemented without agg")
+	}
+	return c.agg.arrival(name, tags)
 }
 
 // Histogram tracks the statistical distribution of a set of values on each host.

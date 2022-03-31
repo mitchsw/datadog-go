@@ -27,6 +27,7 @@ func TestNilError(t *testing.T) {
 		func() error { return c.Flush() },
 		func() error { return c.Close() },
 		func() error { return c.Count("", 0, nil, 1) },
+		func() error { return c.Arrival("", nil) },
 		func() error { return c.Incr("", nil, 1) },
 		func() error { return c.Decr("", nil, 1) },
 		func() error { return c.Histogram("", 0, nil, 1) },
