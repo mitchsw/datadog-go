@@ -1,9 +1,12 @@
 package statsd
 
 import (
+	"fmt"
 	"math"
+	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 /*
@@ -29,9 +32,15 @@ func newCountMetric(name string, value int64, tags []string) *countMetric {
 
 func (c *countMetric) sample(v int64) {
 	atomic.AddInt64(&c.value, v)
+	if strings.HasPrefix(c.name, "dd.hackathon") {
+		fmt.Printf("%v Sampling count metric %v (%v): +%v to %v\n", time.Now(), c.name, c.tags, v, c.value)
+	}
 }
 
 func (c *countMetric) flushUnsafe() metric {
+	if strings.HasPrefix(c.name, "dd.hackathon") {
+		fmt.Printf("%v Flushing count metric %v (%v): %v\n", time.Now(), c.name, c.tags, c.value)
+	}
 	return metric{
 		metricType: count,
 		name:       c.name,
