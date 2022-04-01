@@ -1,7 +1,6 @@
 package statsd
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -257,7 +256,6 @@ func (a *aggregator) arrival(name string, tags []string) error {
 
 	T := now.Sub(lastArrival).Microseconds()
 	a.countsM.RUnlock()
-	fmt.Printf("%v Interarrival time: %v us\n", time.Now(), T)
 
 	// Write three metrics
 	// Note: lots of wasteful context lookups that could be optimized.
