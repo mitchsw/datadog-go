@@ -1,7 +1,6 @@
 package statsd
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 	"sync"
@@ -57,7 +56,6 @@ func TestAggregatorArrivalSample(t *testing.T) {
 	assert.Len(t, a.counts, 0)
 
 	for i := 0; i < 2; i++ {
-		fmt.Println(i)
 		a.arrival("arrivalTest", tags)
 		assert.Len(t, a.arrivalTimes, 1)
 		assert.Contains(t, a.arrivalTimes, "arrivalTest:tag1,tag2")

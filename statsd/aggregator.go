@@ -8,8 +8,11 @@ import (
 )
 
 type arrivalTime struct {
-	t     time.Time
-	mutex sync.Mutex
+	t                 time.Time
+	mutex             sync.Mutex
+	countMetric       string
+	sumTMetric        string
+	sumTSquaredMetric string
 }
 
 type (
@@ -241,11 +244,15 @@ func (a *aggregator) arrival(name string, tags []string) error {
 		a.countsM.RUnlock()
 		a.countsM.Lock()
 		a.arrivalTimes[context] = &arrivalTime{
-			t: time.Now(),
+			t:                 time.Now(),
+			countMetric:       name + ".count",
+			sumTMetric:        name + ".sum_t",
+			sumTSquaredMetric: name + ".sum_t_squared",
 		}
 		a.countsM.Unlock()
 		return nil
 	}
+	a.countsM.RUnlock()
 
 	// Critical region: calculate T and update for next arrival
 	arr.mutex.Lock()
@@ -255,13 +262,12 @@ func (a *aggregator) arrival(name string, tags []string) error {
 	arr.mutex.Unlock()
 
 	T := now.Sub(lastArrival).Microseconds()
-	a.countsM.RUnlock()
 
 	// Write three metrics
 	// Note: lots of wasteful context lookups that could be optimized.
-	a.count(name+".count", 1, tags)
-	a.count(name+".sum_t", T, tags)
-	a.count(name+".sum_t_squared", T*T, tags)
+	a.count(arr.countMetric, 1, tags)
+	a.count(arr.sumTMetric, T, tags)
+	a.count(arr.sumTSquaredMetric, T*T, tags)
 	return nil
 }
 
